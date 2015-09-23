@@ -44,6 +44,29 @@ static CGFloat const kDefaultDPI = 72;
     CGDataConsumerRef pdfConsumer = CGDataConsumerCreateWithCFData((__bridge CFMutableDataRef)pdfFile);
     CGContextRef pdfContext = CGPDFContextCreate(pdfConsumer, &mediaBox, NULL);
     CGContextBeginPage(pdfContext, &mediaBox);
+    
+    switch (image.imageOrientation) {
+        case UIImageOrientationDown:
+            CGContextTranslateCTM(pdfContext, imageWidth, imageHeight);
+            CGContextScaleCTM(pdfContext, -1, -1);
+            break;
+        case UIImageOrientationLeft:
+            mediaBox.size.width = imageHeight;
+            mediaBox.size.height = imageWidth;
+            CGContextTranslateCTM(pdfContext, imageWidth, 0);
+            CGContextRotateCTM(pdfContext, M_PI / 2);
+            break;
+        case UIImageOrientationRight:
+            mediaBox.size.width = imageHeight;
+            mediaBox.size.height = imageWidth;
+            CGContextTranslateCTM(pdfContext, 0, imageHeight);
+            CGContextRotateCTM(pdfContext, -M_PI / 2);
+            break;
+        case UIImageOrientationUp:
+        default:
+            break;
+    }
+    
     CGContextDrawImage(pdfContext, mediaBox, [image CGImage]);	
     CGContextEndPage(pdfContext);
     CGContextRelease(pdfContext);
